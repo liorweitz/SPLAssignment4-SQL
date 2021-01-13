@@ -20,29 +20,29 @@ class _Repository:
 
     def create_tables(self):
         self._conn.executescript("""
-        CREATE TABLE logistics (
+        CREATE TABLE IF NOT EXISTS logistics (
             id              INT     PRIMARY KEY, 
             name            STRING    NOT NULL,
             count_sent      INT     NOT NULL,
             count_received  INT     NOT NULL
         );
         
-        CREATE TABLE suppliers (
+        CREATE TABLE IF NOT EXISTS suppliers (
             id          INT     PRIMARY KEY,
             name        STRING    NOT NULL,
             logistic    INT     NOT NULL,
             FOREIGN KEY (logistic)  REFERENCES logistics(id)
         );
         
-        CREATE TABLE clinics (
-            id          INT     NOT NULL,
+        CREATE TABLE IF NOT EXISTS clinics (
+            id          INT     PRIMARY KEY,
             location    STRING    NOT NULL,
             demand      INT     NOT NULL,
             logistic    INT,
             FOREIGN KEY (logistic)  REFERENCES logistics(id)
         );
         
-        CREATE TABLE vaccines (
+        CREATE TABLE IF NOT EXISTS vaccines (
             id          INT     PRIMARY KEY,
             date        DATE    NOT NULL,
             supplier    INT,
@@ -63,9 +63,24 @@ class _Repository:
 
     def insert_logistic(self, logistic):
         self._logistics.insert(logistic)
+        
+    def find_logistic(self, **keyvals):
+        return self._logistics.find(**keyvals)
 
-    def find_supplier(self, name):
-        return self._suppliers.find(name=name)
+    def find_supplier(self, **keyvals):
+        return self._suppliers.find(**keyvals)
+
+    def find_clinic(self, **keyvals):
+        return self._clinics.find(**keyvals)
+
+    def update_logistics(self, set_values, condition):
+        self._logistics.update(set_values, condition)
+
+    def update_clinics(self, set_values, condition):
+        self._clinics.update(set_values, condition)
+    
+    def get_max_vaccine_id(self):
+        return self._max_vaccine_id
 
 # the repository singleton
 repo = _Repository()

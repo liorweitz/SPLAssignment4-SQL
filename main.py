@@ -4,10 +4,13 @@ from Dto import Clinic, Vaccine, Logistic, Supplier
 from Orders import receive, send
 from Repository import repo
 
+def main():
+    path_to_config_file = sys.argv[1]
+    path_to_order_file = sys.argv[2]
+    path_to_output_file = sys.argv[3]
 
-def initialize(path):
     repo.create_tables()
-    with open(path, "r") as file:
+    with open(path_to_config_file, "r") as file:
         objects_nums = file.readline()
         vaccines_num = int(objects_nums[0])
         suppliers_num = int(objects_nums[2])
@@ -30,13 +33,6 @@ def initialize(path):
             line = line.rstrip('\n')
             repo.insert_logistic(Logistic(*(line.split(','))))
 
-
-def main():
-    path_to_config_file = sys.argv[1]
-    path_to_order_file = sys.argv[2]
-    path_to_output_file = sys.argv[3]
-
-    # initialize(path_to_config_file)
     with open(path_to_order_file, "r") as file:
         for line in file:
             line = line.rstrip("\n")

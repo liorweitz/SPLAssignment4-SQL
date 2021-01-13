@@ -1,4 +1,7 @@
+import sqlite3
+
 import dbtools
+from Dto import Logistic
 
 
 class Dao:
@@ -9,12 +12,13 @@ class Dao:
         self._table_name = dto_type.__name__.lower() + 's'
 
     def insert(self, dto_instance):
-        ins_dict = vars(dto_instance)
-        column_names = ','.join(ins_dict.keys())
-        params = list(ins_dict.values())
-        qmarks = ','.join(['?'] * len(ins_dict))
-        stmt = 'INSERT INTO {} ({}) VALUES ({})'.format(self._table_name, column_names, qmarks)
-        self._conn.execute(stmt, params)
+        with self._conn:
+            ins_dict = vars(dto_instance)
+            column_names = ','.join(ins_dict.keys())
+            params = list(ins_dict.values())
+            qmarks = ','.join(['?'] * len(ins_dict))
+            stmt = 'INSERT OR IGNORE INTO {} ({}) VALUES ({})'.format(self._table_name, column_names, qmarks)
+            self._conn.execute(stmt, params)
 
     def find_all(self):
         c = self._conn.cursor()
@@ -32,23 +36,24 @@ class Dao:
         return dbtools.orm(c, self._dto_type)
 
     def delete(self, **keyvals):
-        column_names = keyvals.keys()
-        params = keyvals.values()
-        stmt = 'DELETE FROM {} WHERE {}'.format(self._table_name,
-                                                ' AND '.join([col + '=?' for col in column_names]))
-        c = self._conn.curser()
-        c.execute(stmt, params)
+        with self._conn:
+            column_names = keyvals.keys()
+            params = keyvals.values()
+            stmt = 'DELETE FROM {} WHERE {}'.format(self._table_name,
+                                                    ' AND '.join([col + '=?' for col in column_names]))
+            c = self._conn.cursor()
+            c.execute(stmt, params)
 
     def update(self, set_values, cond):
-        set_column_names = set_values.keys()
-        set_params = set_values.values()
-
-        cond_column_names = cond.keys()
-        cond_params = cond.values()
-
-        params = set_params + cond_params
-
-        stmt = 'UPDATE {} SET ({}) WHERE ({})'.format(self._table_name,
+        with self._conn:
+            # what field to update, example: count_set = 50
+            set_column_names = list(set_values.keys())
+            set_params = list(set_values.values())
+            # which rows to update, example: WHERE id=3
+            cond_column_names = list(cond.keys())
+            cond_params = list(cond.values())
+            params = set_params + cond_params
+            stmt = 'UPDATE {} SET {} WHERE {}'.format(self._table_name,
                                                       ', '.join([set + '=?' for set in set_column_names]),
                                                       ' AND '.join([cond + '=?' for cond in cond_column_names]))
-        self._conn.execute(stmt, params)
+            self._conn.execute(stmt, params)
