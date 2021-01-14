@@ -26,7 +26,7 @@ class Dao:
         return dbtools.orm(c, self._dto_type)
 
     def find(self, **keyvals):
-        column_names = keyvals.keys()
+        column_names = list(keyvals.keys())
         params = list(keyvals.values())
         stmt = 'SELECT * FROM {} WHERE {}'.format(self._table_name,
                                                   ' AND '.join([col + '=?' for col in column_names]))
@@ -38,7 +38,7 @@ class Dao:
     def delete(self, **keyvals):
         with self._conn:
             column_names = keyvals.keys()
-            params = keyvals.values()
+            params = list(keyvals.values())
             stmt = 'DELETE FROM {} WHERE {}'.format(self._table_name,
                                                     ' AND '.join([col + '=?' for col in column_names]))
             c = self._conn.cursor()

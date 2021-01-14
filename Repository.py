@@ -73,12 +73,46 @@ class _Repository:
     def find_clinic(self, **keyvals):
         return self._clinics.find(**keyvals)
 
+    def find_vaccine(self, **keyvals):
+        return self._vaccines.find(**keyvals)
+
+    def find_earliest(self):
+        c = self._conn.cursor()
+        c.execute('SELECT MIN(date) FROM vaccines')
+        return c.fetchone()
+
     def update_logistics(self, set_values, condition):
         self._logistics.update(set_values, condition)
 
     def update_clinics(self, set_values, condition):
         self._clinics.update(set_values, condition)
-    
+
+    def update_vaccines(self, set_values, condition):
+        self._vaccines.update(set_values, condition)
+
+    def delete_vaccine(self, **keyvals):
+        self._vaccines.delete(**keyvals)
+
+    def sum_inventory(self):
+        c = self._conn.cursor()
+        c.execute('SELECT SUM(quantity) FROM vaccines')
+        return c.fetchone()
+
+    def sum_demand(self):
+        c = self._conn.cursor()
+        c.execute('SELECT SUM(demand) FROM clinics')
+        return c.fetchone()
+
+    def sum_received(self):
+        c = self._conn.cursor()
+        c.execute('SELECT SUM(count_received) FROM logistics')
+        return c.fetchone()
+
+    def sum_sent(self):
+        c = self._conn.cursor()
+        c.execute('SELECT SUM(count_sent) FROM logistics')
+        return c.fetchone()
+
     def get_max_vaccine_id(self):
         return self._max_vaccine_id
 
